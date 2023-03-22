@@ -1,25 +1,28 @@
 package org.personal.projects
 
+import model.{BusinessType, Rate, WorkRate}
+
 import cats.effect._
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.dsl.io._
 import org.http4s.implicits._
-import org.http4s.{EntityEncoder, HttpRoutes, circe}
-import org.personal.projects.model.{BusinessType, Hourly, Incorrect, Monthly, Rate}
+import org.http4s.{EntityEncoder, HttpApp, HttpRoutes, circe}
 
 object Main extends IOApp {
 
   implicit val encoder: EntityEncoder[IO, Json] = circe.jsonEncoderOf[IO, Json]
 
 
-  val helloWorldService = HttpRoutes.of[IO] {
-    case GET -> Root / "businessType" / bType / "rate" / rateType / amount =>
-      (BusinessType.fromString(bType), Rate.fromString(rateType)) match {
-        case (Right(_), _) | (_, Right(_)) => BadRequest(s"Incorrect types supplied")
-        case (Left(b), Left(r)) => Ok(Simulation.runSimulationFromConfig(
-          Simulation(amount = Integer.parseInt(amount), rate = r, businessType = b)).asJson)
+  private val revenueService: HttpApp[IO] = HttpRoutes.of[IO] {
+    case GET -> Root / "businessType" / bType / "workRate" / workRate / "rate" / rateType / amount =>
+      (BusinessType.fromString(bType), WorkRate.fromString(workRate), Rate.fromString(rateType)) match {
+        case (br, wr, lr) if br.isLeft || wr.isLeft || lr.isLeft =>
+          BadRequest(s"Incorrect types supplied: " +
+            s"${List(br, wr, lr).flatMap(_.left.toOption).mkString(" | ")}")
+        case (Right(b), Right(w), Right(r)) => Ok(Simulation.runSimulationFromConfig(
+          Simulation(amount = Integer.parseInt(amount), rate = r, businessType = b, workRate = w)).asJson)
       }
 
   }.orNotFound
@@ -27,7 +30,7 @@ object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
       .bindHttp(8080, "localhost")
-      .withHttpApp(helloWorldService)
+      .withHttpApp(revenueService)
       .serve
       .compile
       .drain

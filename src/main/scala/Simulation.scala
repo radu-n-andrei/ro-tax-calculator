@@ -1,12 +1,12 @@
 package org.personal.projects
 
 import config.Config.{grossEmployeeWage, hourlyRate}
-import model.{BusinessType, Euro, Hourly, Invoice, MicroSRL, Monthly, PFA, Rate, Revenue, Ron, SRL, Salary}
+import model.{BusinessType, Euro, Hourly, Invoice, MicroSRL, Monthly, PFA, Rate, Revenue, Ron, SRL, Salary, WorkRate}
 
 import org.personal.projects.dividend.{DividendDto, DividendSimulation, Yearly}
 import org.personal.projects.taxes.{CamTax, CasContribution, CassContribution, PFAIncomeTax, ProfitSRLTax, SRLIncomeTax}
 
-case class Simulation(amount: Int, rate: Rate, businessType: BusinessType, empWage: Double = grossEmployeeWage)
+case class Simulation(amount: Int, rate: Rate, businessType: BusinessType, empWage: Double = grossEmployeeWage, workRate: WorkRate)
 
 object Simulation {
 
@@ -31,12 +31,12 @@ object Simulation {
     println(s"YEARLY TOTAL UP FOR DIVIDENDS: ${totalUpForDividends * 12.0}")
     // run simulation
     val divs = DividendSimulation.runSimulation(totalUpForDividends, netSalary.revenue)
-    val totalNet = Revenue.fromOtherAmount(divs.find(_.strategyName==Yearly.strategyName).map(_.expectedSalary * 12.0).getOrElse(0.0), Euro)
+    val totalNet = Revenue.fromOtherAmount(divs.find(_.strategyName == Yearly.strategyName).map(_.expectedSalary * 12.0).getOrElse(0.0), Euro)
     println(s"TOTAL EARNINGS: ${totalNet}")
     divs
   }
 
-  def simulateSRL(billedAmount: Revenue): List[DividendDto] = {
+  private def simulateSRL(billedAmount: Revenue): List[DividendDto] = {
     val afterProfitTax = billedAmount.tax(ProfitSRLTax)
     println(s"MONTHLY TAXES: ${billedAmount - afterProfitTax}")
     println(s"YEARLY TAXES: ${(billedAmount - afterProfitTax) * 12}")
@@ -47,12 +47,16 @@ object Simulation {
     divs
   }
 
-  def simulatePFA(billedAmount: Revenue): List[DividendDto] = {
+  private def simulatePFA(billedAmount: Revenue): List[DividendDto] = {
     val yearlyAmount = billedAmount * 12
     println(s"BILLED IN A YEAR: ${yearlyAmount}")
+
     def casAmount = CasContribution.contribution(yearlyAmount)
+
     def cassAmount: Revenue = CassContribution.contribution(yearlyAmount)
+
     def totalContributions = casAmount + cassAmount
+
     println(s"PFA CONTRIBUTIONS: CASS = [${cassAmount}], CAS = [${casAmount}], TOTAL = [${totalContributions}]")
     // only CAS is extracted for the base yearly income tax
     val taxableRevenue = yearlyAmount - casAmount
@@ -67,7 +71,7 @@ object Simulation {
 
   def runSimulationFromConfig(simulationData: Simulation): List[DividendDto] = {
     val billedAmount: Revenue = simulationData.rate match {
-      case Hourly => Invoice(simulationData.amount, Euro).grossBilled
+      case Hourly => Invoice(hourlyRate = simulationData.amount, currency = Euro, workRate = simulationData.workRate).grossBilled
       case Monthly => Revenue.fromOtherAmount(simulationData.amount, Euro)
     }
     println("AMOUNT BILLED PER MONTH: " + billedAmount)

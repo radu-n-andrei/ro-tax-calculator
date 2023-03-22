@@ -15,10 +15,10 @@ case object Monthly extends Rate {
 
 object Rate {
 
-  def fromString(rate: String): Either[Rate, String] = rate match {
-    case Hourly.key => Left(Hourly)
-    case Monthly.key => Left(Monthly)
-    case _ => Right("unexpected rate type")
+  def fromString(rate: String): Either[String, Rate] = rate.toLowerCase match {
+    case Hourly.key => Right(Hourly)
+    case Monthly.key => Right(Monthly)
+    case _ => Left(s"INCORRECT RATE: $rate")
   }
 
 }

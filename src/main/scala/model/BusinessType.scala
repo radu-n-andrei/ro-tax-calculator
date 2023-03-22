@@ -18,10 +18,10 @@ case object PFA extends BusinessType {
 }
 
 object BusinessType {
-  def fromString(businessType: String): Either[BusinessType, String] = businessType.toLowerCase match {
-    case MicroSRL.key => Left(MicroSRL)
-    case SRL.key => Left(SRL)
-    case PFA.key => Left(PFA)
-    case _ => Right("UNKNOWN BUSINESS TYPE")
+  def fromString(businessType: String): Either[String, BusinessType] = businessType.toLowerCase match {
+    case MicroSRL.key => Right(MicroSRL)
+    case SRL.key => Right(SRL)
+    case PFA.key => Right(PFA)
+    case _ => Left(s"INCORRECT BUSINESS TYPE: $businessType")
   }
 }
