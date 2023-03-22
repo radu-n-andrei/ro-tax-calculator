@@ -1,5 +1,5 @@
 package org.personal.projects
-package model
+package taxes
 
 import config.Config._
 
@@ -46,5 +46,13 @@ case object IncomeTax extends Tax {
 
 case object CamTax extends Tax {
   override val taxAmount: Double = cam
+}
+
+case object PFAIncomeTax extends Tax {
+  override val taxAmount: Double = pfa
+}
+
+case object ProfitSRLTax extends Tax {
+  override val taxAmount: Double = profit
 }
 

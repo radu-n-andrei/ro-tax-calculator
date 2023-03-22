@@ -3,6 +3,9 @@ package model
 
 import config.Config._
 
+import org.personal.projects.config.Config
+import org.personal.projects.taxes.{CasTax, CassTax, IncomeTax, PersonalDeduction}
+
 trait Salary {
   val revenue: Revenue
 }
@@ -17,15 +20,16 @@ case class GrossSalary(override val revenue: Revenue) extends Salary {
 
 object Salary {
 
-  def fromNetIncome(rev: Revenue): Salary = {
-    val netWithIV = rev.reverseTax(IncomeTax)
-    val cassAdded = netWithIV.reverseTax(CassTax + CasTax)
-    GrossSalary(cassAdded)
-  }
+  private val minimumWage: Revenue = Revenue.fromOtherAmount(Config.minimumWage, Ron)
 
   def fromGrossIncome(rev: Revenue): Salary = {
-    val beforeIncomeTax = rev.tax(CasTax + CassTax)
-    val netSalary = beforeIncomeTax.tax(IncomeTax)
-    NetSalary(netSalary)
+    val minWageBonus = if(rev.ronAmount == minimumWage.ronAmount) 200 else 0
+    val minWageBonusRev = Revenue.fromOtherAmount(minWageBonus, Ron)
+    val upForTaxes = rev - minWageBonusRev
+    val beforeIncomeTax = upForTaxes.tax(CasTax + CassTax)
+    val personalDeduction = PersonalDeduction.deductionAmount(rev)
+    val taxableAmount = beforeIncomeTax - personalDeduction
+    val netSalary = taxableAmount.tax(IncomeTax)
+    NetSalary(netSalary + personalDeduction + minWageBonusRev)
   }
 }

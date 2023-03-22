@@ -3,6 +3,8 @@ package model
 
 import config.Config.euroExRate
 
+import org.personal.projects.taxes.Tax
+
 case class Revenue(euroAmount: Double, ronAmount: Double) {
   def *(d: Double) = Revenue(euroAmount * d, ronAmount * d)
 
@@ -25,7 +27,7 @@ case class Revenue(euroAmount: Double, ronAmount: Double) {
 
 object Revenue {
 
-  private val empty: Revenue = Revenue(0.0, 0.0)
+  val empty: Revenue = Revenue(0.0, 0.0)
 
   def fromOtherAmount(amount: Double, currency: Currency): Revenue = currency match {
     case Euro => Revenue(amount, amount * euroExRate)

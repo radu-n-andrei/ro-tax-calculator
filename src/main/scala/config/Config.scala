@@ -5,8 +5,7 @@ case object Config {
 
   val minimumWage: Double = 3000
 
-  // cat vreau sa-mi dau salariu lunar net in euro
-  val netEmployeeWage: Double = 3000
+  val grossEmployeeWage: Double = 3000
 
   // cat cer pe ora in euro
   val hourlyRate = 55
@@ -24,4 +23,8 @@ case object Config {
 
   // srl tax
   val srl = 1
+  val profit = 16
+
+  // pfa income tax
+  val pfa = 10.0
 }

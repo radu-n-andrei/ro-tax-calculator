@@ -7,6 +7,7 @@ import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.{EntityEncoder, HttpRoutes, circe}
+import org.personal.projects.model.{BusinessType, Hourly, Incorrect, Monthly, Rate}
 
 object Main extends IOApp {
 
@@ -14,10 +15,13 @@ object Main extends IOApp {
 
 
   val helloWorldService = HttpRoutes.of[IO] {
-    case GET -> Root / "hello" =>
-      Ok(Simulation.runSimulationFromConfig().asJson)
-    case GET -> Root / "config" / rate =>
-      Ok(Simulation.runSimulationFromConfig(Simulation(hRate = Integer.parseInt(rate))).asJson)
+    case GET -> Root / "businessType" / bType / "rate" / rateType / amount =>
+      (BusinessType.fromString(bType), Rate.fromString(rateType)) match {
+        case (Right(_), _) | (_, Right(_)) => BadRequest(s"Incorrect types supplied")
+        case (Left(b), Left(r)) => Ok(Simulation.runSimulationFromConfig(
+          Simulation(amount = Integer.parseInt(amount), rate = r, businessType = b)).asJson)
+      }
+
   }.orNotFound
 
   def run(args: List[String]): IO[ExitCode] =
