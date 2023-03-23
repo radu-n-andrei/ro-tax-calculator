@@ -3,6 +3,7 @@ package org.personal.projects
 import config.Config.{grossEmployeeWage, hourlyRate}
 import model.{BusinessType, Euro, Hourly, Invoice, MicroSRL, Monthly, PFA, Rate, Revenue, Ron, SRL, Salary, WorkRate}
 
+import cats.effect.IO
 import org.personal.projects.dividend.{DividendDto, DividendSimulation, Yearly}
 import org.personal.projects.taxes.{CamTax, CasContribution, CassContribution, PFAIncomeTax, ProfitSRLTax, SRLIncomeTax}
 
@@ -69,18 +70,19 @@ object Simulation {
     List(DividendDto("PFA MONTHLY", 0.0, netEarnings.euroAmount / 12.0))
   }
 
-  def runSimulationFromConfig(simulationData: Simulation): List[DividendDto] = {
+  def runSimulationFromConfig(simulationData: Simulation): IO[List[DividendDto]] = {
     val billedAmount: Revenue = simulationData.rate match {
       case Hourly => Invoice(hourlyRate = simulationData.amount, currency = Euro, workRate = simulationData.workRate).grossBilled
       case Monthly => Revenue.fromOtherAmount(simulationData.amount, Euro)
     }
     println("AMOUNT BILLED PER MONTH: " + billedAmount)
     println("AMOUNT BILLED PER YEAR: " + billedAmount * 12)
-    simulationData.businessType match {
+    val res = simulationData.businessType match {
       case MicroSRL => simulateMicroSRL(billedAmount, simulationData.empWage)
       case PFA => simulatePFA(billedAmount)
       case SRL => simulateSRL(billedAmount)
     }
+    IO(res)
   }
 
 
