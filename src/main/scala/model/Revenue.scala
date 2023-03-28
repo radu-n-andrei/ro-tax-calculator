@@ -2,8 +2,9 @@ package org.personal.projects
 package model
 
 import config.Config.euroExRate
+import taxes.Tax
 
-import org.personal.projects.taxes.Tax
+import cats.effect.IO
 
 case class Revenue(euroAmount: Double, ronAmount: Double) {
   def *(d: Double) = Revenue(euroAmount * d, ronAmount * d)
@@ -33,5 +34,7 @@ object Revenue {
     case Euro => Revenue(amount, amount * euroExRate)
     case Ron => Revenue(amount / euroExRate, amount)
   }
+
+  def fromOtherIO(amount: Double, currency: Currency): IO[Revenue] = IO(fromOtherAmount(amount, currency))
 
 }

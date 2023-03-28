@@ -1,10 +1,11 @@
 package org.personal.projects
 package model
 
-import config.Config._
+import config.Config
+import taxes.{CasTax, CassTax, IncomeTax, PersonalDeduction}
 
-import org.personal.projects.config.Config
-import org.personal.projects.taxes.{CasTax, CassTax, IncomeTax, PersonalDeduction}
+import cats.Traverse.ops.toAllTraverseOps
+import cats.effect.IO
 
 trait Salary {
   val revenue: Revenue
@@ -22,14 +23,12 @@ object Salary {
 
   private val minimumWage: Revenue = Revenue.fromOtherAmount(Config.minimumWage, Ron)
 
-  def fromGrossIncome(rev: Revenue): Salary = {
-    val minWageBonus = if(rev.ronAmount == minimumWage.ronAmount) 200 else 0
-    val minWageBonusRev = Revenue.fromOtherAmount(minWageBonus, Ron)
-    val upForTaxes = rev - minWageBonusRev
-    val beforeIncomeTax = upForTaxes.tax(CasTax + CassTax)
-    val personalDeduction = PersonalDeduction.deductionAmount(rev)
-    val taxableAmount = beforeIncomeTax - personalDeduction
-    val netSalary = taxableAmount.tax(IncomeTax)
-    NetSalary(netSalary + personalDeduction + minWageBonusRev)
+  def fromGrossIncome(revenue: Revenue): IO[Salary] = {
+    for {
+      minWageBonus <- Option.when(revenue.ronAmount == minimumWage.ronAmount)(200.0).traverse(Revenue.fromOtherIO(_, Ron))
+      beforeIncomeTax <- minWageBonus.fold(IO(revenue))(r => IO(revenue - r)).map(_.tax(CasTax + CassTax))
+      personalDeduction <- IO(PersonalDeduction.deductionAmount(revenue))
+      netSalary = (beforeIncomeTax - personalDeduction).tax(IncomeTax)
+    } yield NetSalary(netSalary + personalDeduction + minWageBonus.getOrElse(Revenue.empty))
   }
 }

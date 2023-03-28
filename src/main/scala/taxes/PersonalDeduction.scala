@@ -1,11 +1,12 @@
 package org.personal.projects
 package taxes
 
-import model.{Revenue, Ron}
 import config.Config._
+import model.{Revenue, Ron}
 
 object PersonalDeduction {
 
+  // NO CLUE HOW I GOT TO THIS ONE...
   def deductionAmount(rev: Revenue): Revenue = {
     val min = Revenue.fromOtherAmount(minimumWage, Ron)
     val dif = rev - min

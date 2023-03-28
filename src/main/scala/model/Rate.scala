@@ -1,16 +1,26 @@
 package org.personal.projects
 package model
 
+import cats.effect.IO
+
 sealed trait Rate {
   val key: String
+
+  def generatedRevenue(simulation: Simulation): IO[Revenue]
 }
 
 case object Hourly extends Rate {
   override val key = "hourly"
+
+  override def generatedRevenue(simulation: Simulation): IO[Revenue] =
+    IO(Invoice(hourlyRate = simulation.amount, currency = Euro, workRate = simulation.workRate).grossBilled)
 }
 
 case object Monthly extends Rate {
   override val key = "monthly"
+
+  override def generatedRevenue(simulation: Simulation): IO[Revenue] =
+    IO(Revenue.fromOtherAmount(simulation.amount, Euro))
 }
 
 object Rate {
