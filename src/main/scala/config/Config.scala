@@ -17,6 +17,7 @@ case object Config {
   val cass = 10
   val iv = 10
   val cam = 2.25
+  val swecas = 25
 
   // dividend tax
   val div = 8
@@ -27,5 +28,5 @@ case object Config {
 
   // pfa income tax
   val pfa = 10.0
-  val swe = 40.0
+  val swe = 35.15
 }

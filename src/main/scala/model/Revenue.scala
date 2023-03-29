@@ -21,7 +21,7 @@ case class Revenue(euroAmount: Double, ronAmount: Double) {
 
   def reverseTax(t: Tax): Revenue = map(t.subtractTax)
 
-  def taxContribution(tax: Tax): Revenue = map(tax.asContribution)
+  def taxContribution(tax: Tax): IO[Revenue] = IO(map(tax.asContribution))
 
   override def toString: String = f"Euro: $euroAmount%.2f |||| Ron: $ronAmount%.2f"
 }

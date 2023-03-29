@@ -17,7 +17,7 @@ case object MicroSRL extends BusinessType {
 
   override def evaluateEarnings(revenue: Revenue, wage: Option[Double]): IO[List[DividendDto]] = for {
     netSalary <- Salary.fromGrossIncome(Revenue.fromOtherAmount(wage.get, Ron))
-    totalPayedForEmp <- Revenue.fromOtherIO(wage.get, Ron).map(_.taxContribution(CamTax))
+    totalPayedForEmp <- Revenue.fromOtherIO(wage.get, Ron).flatMap(_.taxContribution(CamTax))
     afterSrl <- revenue.tax(SRLIncomeTax)
     sim <- DividendSimulation.runSimulation(afterSrl - totalPayedForEmp, netSalary.revenue)
   } yield sim
@@ -48,8 +48,9 @@ object SwedishSoleTrader extends BusinessType {
 
   override def evaluateEarnings(revenue: Revenue, wage: Option[Double]): IO[List[DividendDto]] = for {
     monthlyAmount <- IO(revenue)
-    deducted <- monthlyAmount.tax(SwedishTraderTax)
-  } yield List(DividendDto("SWE", 0.0, deducted.euroAmount))
+    taxable <- monthlyAmount.tax(SwedishTraderCas)
+    net <- taxable.tax(SwedishTraderTax)
+  } yield List(DividendDto("SWE", 0.0, net.euroAmount))
 }
 
 object BusinessType {

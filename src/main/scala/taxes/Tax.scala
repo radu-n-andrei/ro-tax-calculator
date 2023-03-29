@@ -60,3 +60,7 @@ case object SwedishTraderTax extends Tax {
   override val taxAmount: Double = swe
 }
 
+case object SwedishTraderCas extends Tax {
+  override val taxAmount: Double = swecas
+}
+
