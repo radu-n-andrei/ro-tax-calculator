@@ -56,3 +56,7 @@ case object ProfitSRLTax extends Tax {
   override val taxAmount: Double = profit
 }
 
+case object SwedishTraderTax extends Tax {
+  override val taxAmount: Double = swe
+}
+

@@ -17,7 +17,7 @@ case class Revenue(euroAmount: Double, ronAmount: Double) {
 
   def map(f: Double => Double) = Revenue(f(euroAmount), f(ronAmount))
 
-  def tax(t: Tax): Revenue = map(t.applyTax)
+  def tax(t: Tax): IO[Revenue] = IO(map(t.applyTax))
 
   def reverseTax(t: Tax): Revenue = map(t.subtractTax)
 

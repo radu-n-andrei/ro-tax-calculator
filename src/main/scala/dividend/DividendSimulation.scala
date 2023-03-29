@@ -11,7 +11,7 @@ object DividendSimulation {
 
   private def unfoldStrategy(strategy: DividendExtractionStrategy, revenue: Revenue, baseYearlyWage: Revenue): IO[DividendDto] = for {
     extractedAmountGross <- strategy.extractionAmount(revenue)
-    extractedAmountNet = CassContribution.afterContribution(extractedAmountGross.tax(DividendTax))
+    extractedAmountNet <- extractedAmountGross.tax(DividendTax).map(CassContribution.afterContribution)
     totalExtractedNet = extractedAmountNet * strategy.extractions
   } yield DividendDto(strategy.strategyName, totalExtractedNet.euroAmount, (totalExtractedNet + baseYearlyWage).euroAmount / 12.0)
 

@@ -27,4 +27,5 @@ case object Config {
 
   // pfa income tax
   val pfa = 10.0
+  val swe = 40.0
 }

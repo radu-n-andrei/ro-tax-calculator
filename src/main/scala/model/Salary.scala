@@ -26,9 +26,9 @@ object Salary {
   def fromGrossIncome(revenue: Revenue): IO[Salary] = {
     for {
       minWageBonus <- Option.when(revenue.ronAmount == minimumWage.ronAmount)(200.0).traverse(Revenue.fromOtherIO(_, Ron))
-      beforeIncomeTax <- minWageBonus.fold(IO(revenue))(r => IO(revenue - r)).map(_.tax(CasTax + CassTax))
+      beforeIncomeTax <- minWageBonus.fold(revenue)(r => revenue - r).tax(CasTax + CassTax)
       personalDeduction <- IO(PersonalDeduction.deductionAmount(revenue))
-      netSalary = (beforeIncomeTax - personalDeduction).tax(IncomeTax)
+      netSalary <- (beforeIncomeTax - personalDeduction).tax(IncomeTax)
     } yield NetSalary(netSalary + personalDeduction + minWageBonus.getOrElse(Revenue.empty))
   }
 }
