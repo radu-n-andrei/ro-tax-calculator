@@ -1,6 +1,7 @@
 package org.personal.projects
 
 import model.{BusinessType, Rate, WorkRate}
+import query.JobQueryParamMatcher
 
 import cats.effect._
 import io.circe.Json
@@ -8,8 +9,7 @@ import io.circe.syntax.EncoderOps
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.dsl.io._
 import org.http4s.implicits._
-import org.http4s.{EntityEncoder, HttpApp, HttpRoutes, ParseFailure, QueryParamDecoder, circe}
-import org.personal.projects.query.{JobDescription, JobQueryParamMatcher}
+import org.http4s.{EntityEncoder, HttpApp, HttpRoutes, circe}
 
 object Main extends IOApp {
 
@@ -22,7 +22,7 @@ object Main extends IOApp {
           BadRequest(s"Incorrect types supplied: " +
             s"${List(br, wr, lr).flatMap(_.left.toOption).mkString(" | ")}")
         case (Right(b), Right(w), Right(r)) => Ok(Simulation.runSimulationFromConfig(
-          Simulation(amount = Integer.parseInt(amount), rate = r, businessType = b, workRate = w)).map(_.asJson))
+          Simulation(amount = Integer.parseInt(amount), rate = r, incomeGenerator = b, workRate = w)).map(_.asJson))
       }
       //TODO wip
     case GET -> Root / "yolo" :? JobQueryParamMatcher(jobDescriptions) => jobDescriptions.fold(

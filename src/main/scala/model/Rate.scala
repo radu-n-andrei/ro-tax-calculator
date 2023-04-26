@@ -13,7 +13,7 @@ case object Hourly extends Rate {
   override val key = "hourly"
 
   override def generatedRevenue(simulation: Simulation): IO[Revenue] =
-    IO(Invoice(hourlyRate = simulation.amount, currency = Euro, workRate = simulation.workRate).grossBilled)
+    IO(Revenue.fromOtherAmount(simulation.amount * simulation.workRate.hoursPerDay * 20, Euro))
 }
 
 case object Monthly extends Rate {
