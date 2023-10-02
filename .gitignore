@@ -2,3 +2,7 @@ target/*
 .bsp/*
 .idea/*
 project/*
+.bloop/*
+.metals/*
+.vscode/*
+setings.json

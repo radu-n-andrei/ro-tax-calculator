@@ -7,8 +7,7 @@ val http4sVersion = "0.23.19-RC3"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "contract-checker",
-    idePackagePrefix := Some("org.personal.projects")
+    name := "contract-checker"
   )
 
 libraryDependencies ++= Seq(
